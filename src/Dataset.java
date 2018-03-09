@@ -12,7 +12,9 @@ public class Dataset {
      */
     public Dataset(String[] attributes){
         for(String s : attributes){
-            addAttribute(s);
+            if(s != null) {
+                addAttribute(s);
+            }
         }
     }
 

@@ -118,6 +118,8 @@ public class KnnClassifier {
         }
         //TODO go through each dataset, create new OutputCategory in Arraylist if it doesn't exist already and move
         //TODO the entries to the correct OutputCategory
+
+
     }
 
     /**
@@ -239,6 +241,4 @@ public class KnnClassifier {
         }
         return packs;
     }
-
-    //TODO classification
 }

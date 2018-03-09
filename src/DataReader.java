@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -9,8 +12,6 @@ public class DataReader {
     private ArrayList<Integer> ignoredColumns = new ArrayList<>();
     private String delimiter = ";";
     private int outputColumnCount = -1;
-
-    private ArrayList<Attribute> outputAttributes = new ArrayList<>();
 
     /**
      * Creates a new instance of a DataReader
@@ -60,20 +61,42 @@ public class DataReader {
     public ArrayList<Dataset> readData(String filename){
         ArrayList<Dataset> datasets = new ArrayList<>();
 
-        //TODO read data from file line by line (starting at dataBeginRowCount), split each line at delimiter,
-        //TODO remove all ignored columns, create new DataSet instance and give it splitted array,
-        //TODO add instance to ArrayList
+        String line = "";
+        int skipped = 0;
 
-        //TODO for each line add the attribute for the output column to the ArrayList outputAttributes
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            while ((line = br.readLine()) != null) {
+                if(skipped+1 >= dataBeginRowCount) {
+                    String[] splitted = line.split(delimiter);
+
+                    // Remove ignored columns
+                    for(int ignore : ignoredColumns){
+                        if(ignore <= splitted.length){
+                            splitted[ignore-1] = null;
+                        }
+                    }
+
+                    // Check if output column contains a numeric value and convert it to an integer for categorizing
+                    if(outputColumnCount <= splitted.length){
+                        String outputValue = splitted[outputColumnCount-1];
+                        try{
+                            double d = Double.parseDouble(outputValue);
+                            splitted[outputColumnCount-1] = Integer.toString((int)Math.floor(d));
+                        }catch(Exception e){}
+                    }
+
+                    // Create new dataset from read attributes and add it to list
+                    Dataset d = new Dataset(splitted);
+                    datasets.add(d);
+                }else{
+                    skipped++;
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return datasets;
-    }
-
-    /**
-     * Returns a list of all Attribute instances of the output column
-     * @return an ArrayList of Attribute instances
-     */
-    public ArrayList<Attribute> getOutputAttributes() {
-        return outputAttributes;
     }
 }
