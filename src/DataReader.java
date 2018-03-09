@@ -54,7 +54,24 @@ public class DataReader {
     }
 
     /**
+     * Returns all ignored columns
+     * @return an ArrayList of Integers representing all columns in ignored state
+     */
+    public ArrayList<Integer> getIgnoredColumns() {
+        return ignoredColumns;
+    }
+
+    /**
+     * Returns the column number where the output is located
+     * @return an int containing the output column number
+     */
+    public int getOutputColumnCount() {
+        return outputColumnCount;
+    }
+
+    /**
      * Reads all data from a data file and returns an ArrayList containing all datasets
+     * If the output column is a numeric value, it will be stripped of at the comma for categorizing
      * @param filename a String representing the filename of the data file
      * @return an ArrayList of Dataset entries
      */
@@ -66,6 +83,7 @@ public class DataReader {
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             while ((line = br.readLine()) != null) {
+                if(line.trim().isEmpty()){continue;}
                 if(skipped+1 >= dataBeginRowCount) {
                     String[] splitted = line.split(delimiter);
 

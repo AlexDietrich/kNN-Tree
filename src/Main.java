@@ -4,12 +4,12 @@ public class Main {
         KnnClassifier classifier = new KnnClassifier();
         classifier.setK(10);
 
-        /** IRIS **/
+        /** IRIS **
         classifier.setDelimiter(",");
         classifier.setOutputColumnCount(5);
         classifier.readData("datafiles/iris.data");
 
-        /** WHITE WINE **
+        /** WHITE WINE **/
         classifier.setDelimiter(";");
         //classifier.ignoreColumns(new int[]{1,2});
         classifier.setOutputColumnCount(12);

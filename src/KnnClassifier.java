@@ -12,7 +12,7 @@ public class KnnClassifier {
     private ArrayList<OutputCategory> categories = new ArrayList<>();
 
     private int k = 10;
-    private int outputColumnCount = -1;
+    private int effectiveOutputColumnCount = -1;
     private boolean removeOutliers = true;
 
     /**
@@ -37,8 +37,16 @@ public class KnnClassifier {
      * @param filename a String representing the filename which contains the data
      */
     public void readData(String filename){
-        if(outputColumnCount > 0) {
+        if(dataReader.getOutputColumnCount() > 0) {
             ArrayList<Dataset> datasets = this.dataReader.readData(filename);
+
+            // Calculate effective output column (without ignored columns)
+            effectiveOutputColumnCount = dataReader.getOutputColumnCount();
+            for(int ignoredColumn : dataReader.getIgnoredColumns()){
+                if(ignoredColumn < dataReader.getOutputColumnCount()){
+                    effectiveOutputColumnCount--;
+                }
+            }
 
             if(removeOutliers){
                 datasets = removeOutliers(datasets);
@@ -77,7 +85,6 @@ public class KnnClassifier {
      */
     public void setOutputColumnCount(int column){
         if(column > 0){
-            this.outputColumnCount = column;
             this.dataReader.setOutputColumnCount(column);
         }
     }
@@ -110,16 +117,33 @@ public class KnnClassifier {
     /**
      * Creates a new OutputCategory for each output category available in the dataset list and moves every dataset
      * from this list to the corresponding category
-     * If the output column is a numeric value, it will be stripped of after the comma for categorizing
      */
     private void categorizeList(ArrayList<Dataset> datasets){
-        if(datasets.size() <= 0 || this.outputColumnCount <= 0){
+        if(datasets.size() <= 0 || effectiveOutputColumnCount <= 0){
             return;
         }
-        //TODO go through each dataset, create new OutputCategory in Arraylist if it doesn't exist already and move
-        //TODO the entries to the correct OutputCategory
 
+        for(Dataset dataset : datasets){
+            int index = -1;
+            for(OutputCategory cat : categories){
+                if(cat.getCategoryValue().getType() == AttributeTypes.TEXT){
+                    if(cat.getCategoryValue().getValue().equals(dataset.getAttribute(effectiveOutputColumnCount-1).getValue())){
+                        index = categories.indexOf(cat);
+                        break;
+                    }
+                }else if(cat.getCategoryValue().getValue() == dataset.getAttribute(effectiveOutputColumnCount-1).getValue()){
+                    index = categories.indexOf(cat);
+                    break;
+                }
+            }
+            if(index == -1){
+                OutputCategory newCat = new OutputCategory(dataset.getAttribute(effectiveOutputColumnCount-1));
+                categories.add(newCat);
+                index = categories.indexOf(newCat);
+            }
 
+            categories.get(index).addDataset(dataset);
+        }
     }
 
     /**
@@ -157,7 +181,7 @@ public class KnnClassifier {
                     numbers.add(0);
                 }
                 for(int j = 0; j < k; j++){
-                    Attribute attr = train.get(j).getAttribute(outputColumnCount-1);
+                    Attribute attr = train.get(j).getAttribute(effectiveOutputColumnCount-1);
                     for(int n = 0; n < categories.size(); n++) {
                         if (attr.getType() == AttributeTypes.TEXT){
                             if(attr.getValue().equals(categories.get(n).getCategoryValue().getValue())) {
@@ -178,11 +202,11 @@ public class KnnClassifier {
                 // Calculate actual and prediction index
                 for(int j = 0; j < categories.size(); j++){
                     if(actualIndex == 0){
-                        if(test.getAttribute(outputColumnCount-1).getType() == AttributeTypes.TEXT){
-                            if(test.getAttribute(outputColumnCount-1).getValue().equals(categories.get(j).getCategoryValue().getValue())){
+                        if(test.getAttribute(effectiveOutputColumnCount-1).getType() == AttributeTypes.TEXT){
+                            if(test.getAttribute(effectiveOutputColumnCount-1).getValue().equals(categories.get(j).getCategoryValue().getValue())){
                                 actualIndex = j;
                             }
-                        }else if(test.getAttribute(outputColumnCount-1).getValue() == categories.get(j).getCategoryValue().getValue()){
+                        }else if(test.getAttribute(effectiveOutputColumnCount-1).getValue() == categories.get(j).getCategoryValue().getValue()){
                             actualIndex = j;
                         }
                     }
