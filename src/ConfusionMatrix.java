@@ -51,7 +51,7 @@ public class ConfusionMatrix {
      * Prints the confusion matrix to stdout
      */
     public void printMatrix(){
-        //TODO print matrix to console
+        //TODO pretty print matrix to console
         for(ArrayList<Integer> list : matrix){
             for(Integer i : list){
                 System.out.print(i+"   ");
