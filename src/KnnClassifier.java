@@ -1,6 +1,7 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A basic framework for classifying any set of data
@@ -158,7 +159,7 @@ public class KnnClassifier {
     }
 
     /**
-     *
+     * Classifies all datasets once by using k fold cross validation
      */
     public void doKFoldCross(){
         // Reset confusion matrix
@@ -174,61 +175,107 @@ public class KnnClassifier {
 
         // Do k passes and change pack for testing each time
         for(int i = 0; i < k; i++){
-            System.out.print("Doing pass "+(i+1)+"...");
-            // Create List for training datasets
-            ArrayList<Dataset> train = new ArrayList<>();
-            for(int j = 0; j < k; j++){
-                if(j == i) continue;
-                train.addAll(packs.get(j));
-            }
-
-            // Go through each entry of test pack
-            for(Dataset test : packs.get(i)){
-                DatasetEuklidianComparator cmp = new DatasetEuklidianComparator(test);
-                Collections.sort(train, cmp);
-
-                // Check which category value is found the most in first k elements of sorted list
-                ArrayList<Integer> numbers = new ArrayList<>();
-                for(int j = 0; j < categories.size(); j++){
-                    numbers.add(0);
-                }
-                for(int j = 0; j < k; j++){
-                    Attribute attr = train.get(j).getAttribute(effectiveOutputColumnCount-1);
-                    for(int n = 0; n < categories.size(); n++) {
-                        if(attr.getValue().equals(categories.get(n).getCategoryValue().getValue())) {
-                            numbers.set(n, numbers.get(n) + 1);
-                        }
-                    }
-                }
-
-                // Actual index
-                int actualIndex = 0;
-                // Prediction index
-                int mostIndex = 0;
-                int mostValue = 0;
-
-                // Calculate actual and prediction index
-                for(int j = 0; j < categories.size(); j++){
-                    if(actualIndex == 0){
-                        if(test.getAttribute(effectiveOutputColumnCount-1).getValue().equals(categories.get(j).getCategoryValue().getValue())){
-                            actualIndex = j;
-                        }
-                    }
-                    if(numbers.get(j) > mostValue){
-                        mostIndex = j;
-                        mostValue = numbers.get(j);
-                    }
-                }
-
-                // Add entry to confusion matrix
-                confusionMatrix.increment(mostIndex, actualIndex);
-            }
-            System.out.println("Done!");
+            doPass(i, packs);
         }
 
         // Print confusion matrix
         System.out.println("Printing results...\n");
         confusionMatrix.printMatrix();
+    }
+
+    /**
+     * Does a single pass from k fold cross validation
+     * @param passIndex the index of the current pass (first pass = 0, last pass = k-1)
+     * @param packs an ArrayList which represents all k packs used for this pass
+     */
+    private void doPass(int passIndex, ArrayList<ArrayList<Dataset>> packs){
+        System.out.print("Doing pass "+(passIndex+1)+"...");
+
+        // Create List for training datasets
+        ArrayList<Dataset> train = new ArrayList<>();
+        for(int j = 0; j < k; j++){
+            if(j == passIndex) continue;
+            train.addAll(packs.get(j));
+        }
+
+        // Go through each entry of test pack
+        for(Dataset test : packs.get(passIndex)){
+            // Predict output
+            Attribute prediction = classifyDataset(test, train);
+            // Add entry to confusion matrix
+            confusionMatrix.increment(prediction, test.getAttribute(effectiveOutputColumnCount-1));
+        }
+
+        System.out.println("Done!");
+    }
+
+    /**
+     * Classifies a single dataset by using a list of training data
+     * @param candidate the dataset to be classified
+     * @param train an ArrayList of Dataset instances which should be used for training
+     * @return an Attribute representing the predicted output
+     */
+    private Attribute classifyDataset(Dataset candidate, ArrayList<Dataset> train){
+        DatasetEuklidianComparator cmp = new DatasetEuklidianComparator(candidate);
+        Collections.sort(train, cmp);
+
+        // Check which category value is found the most in first k elements of sorted list
+        Hashtable<Attribute, Integer> numbers = new Hashtable<>();
+        for(int j = 0; j < k; j++){
+            Attribute a = train.get(j).getAttribute(effectiveOutputColumnCount-1);
+            if(numbers.containsKey(a)){
+                numbers.replace(a,numbers.get(a)+1);
+            }else {
+                numbers.put(a,1);
+            }
+        }
+
+        // Prediction index
+        Attribute predicted = null;
+        int mostValue = 0;
+
+        // Calculate actual and prediction index
+        for(Attribute a : numbers.keySet()){
+            if(numbers.get(a) > mostValue){
+                mostValue = numbers.get(a);
+                predicted = a;
+            }
+        }
+
+        return predicted;
+    }
+
+    /**
+     * Measures the time used for classifying a set number of datasets
+     * @param number the number of datasets for which the time should be measured
+     */
+    public void measureClassifyingTime(int number){
+        // Creating packs
+        ArrayList<ArrayList<Dataset>> packs = createPacks();
+
+        // Create List for training datasets
+        ArrayList<Dataset> train = new ArrayList<>();
+        for(int j = 1; j < k; j++){
+            train.addAll(packs.get(j));
+        }
+
+        // Get single dataset for classifying
+        Dataset test = packs.get(0).get(0);
+
+        System.out.print("Measuring time...");
+
+        long startNanos = System.nanoTime();
+        for(int i = 0; i < number; i++){
+            classifyDataset(test, train);
+        }
+        long timeUsed = System.nanoTime() - startNanos;
+
+        System.out.println("Done!");
+
+        System.out.println("Printing results...");
+        Duration d = Duration.ofNanos(timeUsed);
+        String formatted = d.toString().substring(2).replaceAll("(\\d[HMS])(?!$)", "$1 ").toLowerCase();
+        System.out.println("Classified "+number+" datasets in "+formatted+"!");
     }
 
     /**

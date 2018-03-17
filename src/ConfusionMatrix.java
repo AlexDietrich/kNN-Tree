@@ -26,13 +26,28 @@ public class ConfusionMatrix {
 
     /**
      * Increments a field in the confusion matrix
-     * @param predictionIndex the index of the predicted category
-     * @param referenceIndex the index of the actual reference category
+     * @param prediction the predicted category
+     * @param reference the actual reference category
      */
-    public void increment(int predictionIndex, int referenceIndex){
-        if(matrix != null && matrix.size() > referenceIndex && matrix.get(0).size() > predictionIndex) {
-            matrix.get(referenceIndex).set(predictionIndex, matrix.get(referenceIndex).get(predictionIndex) + 1);
+    public void increment(Attribute prediction, Attribute reference){
+        if(matrix == null) {
+            return;
         }
+
+        int predIndex = -1, refIndex = -1;
+        for(int i = 0; i < outputCategories.size(); i++){
+            if(prediction.getValue().equals(outputCategories.get(i).getValue())){
+                predIndex = i;
+            }
+            if(reference.getValue().equals(outputCategories.get(i).getValue())){
+                refIndex = i;
+            }
+            if(predIndex != -1 && refIndex != -1){
+                break;
+            }
+        }
+
+        matrix.get(refIndex).set(predIndex, matrix.get(refIndex).get(predIndex) + 1);
     }
 
     /**
