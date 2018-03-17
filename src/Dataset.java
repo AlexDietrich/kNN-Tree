@@ -28,11 +28,12 @@ public class Dataset {
         attr = attr.trim();
 
         // Check if attribute is int
+        /*
         try{
             int i = Integer.parseInt(attr);
             attributes.add(new Attribute(i, AttributeTypes.INTEGER));
             return;
-        }catch(Exception e){}
+        }catch(Exception e){}*/
 
         // Check if attribute is double
         try{

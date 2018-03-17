@@ -40,6 +40,7 @@ public class DatasetEuklidianComparator implements Comparator<Dataset> {
                 dist1 += DatasetEuklidianComparator.unlimitedCompare((String)ac.getValue(), (String)a1.getValue());
                 dist2 += DatasetEuklidianComparator.unlimitedCompare((String)ac.getValue(), (String)a2.getValue());
             }else{
+                /*
                 double acDouble = 0.0;
                 double a1Double = 0.0;
                 double a2Double = 0.0;
@@ -54,7 +55,10 @@ public class DatasetEuklidianComparator implements Comparator<Dataset> {
                 switch(a2.getType()){
                     case INTEGER: a2Double = (double)((Integer)a2.getValue()).intValue(); break;
                     case DECIMAL: a2Double = (double)a2.getValue();
-                }
+                }*/
+                double acDouble = (double)ac.getValue();
+                double a1Double = (double)a1.getValue();
+                double a2Double = (double)a2.getValue();
 
                 tmp1 += Math.pow(a1Double-acDouble, 2);
                 tmp2 += Math.pow(a2Double-acDouble, 2);

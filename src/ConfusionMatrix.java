@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 /**
@@ -52,12 +53,29 @@ public class ConfusionMatrix {
      */
     public void printMatrix(){
         //TODO pretty print matrix to console
-        for(ArrayList<Integer> list : matrix){
-            for(Integer i : list){
-                System.out.print(i+"   ");
+        for (Attribute attr:outputCategories) {
+            System.out.print(attr.getValue()+"   ");
+        }
+        System.out.println("\n-------------------------------------");
+        int count = 0;
+        int correct = 0;
+        for(int i = 0; i < matrix.size(); i++){
+            for(int j = 0; j < matrix.get(i).size(); j++){
+                System.out.print(matrix.get(i).get(j)+"   ");
+                count += matrix.get(i).get(j);
+                if(i == j){
+                    correct += matrix.get(i).get(j);
+                }
             }
             System.out.print("\n");
         }
+        System.out.println("-------------------------------------");
+        System.out.println("Vertical axis: Reference");
+        System.out.println("Horizontal axis: Prediction");
+        System.out.println("-------------------------------------");
+
+        //Print accuracy
+        System.out.println("Accuracy: "+new DecimalFormat("#.##").format((double)correct/(double)count*100)+"%");
     }
 
 }

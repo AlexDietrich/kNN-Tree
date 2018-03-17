@@ -38,7 +38,9 @@ public class KnnClassifier {
      */
     public void readData(String filename){
         if(dataReader.getOutputColumnCount() > 0) {
+            System.out.print("Reading data...");
             ArrayList<Dataset> datasets = this.dataReader.readData(filename);
+            System.out.println("Done!");
 
             // Calculate effective output column (without ignored columns)
             effectiveOutputColumnCount = dataReader.getOutputColumnCount();
@@ -98,6 +100,16 @@ public class KnnClassifier {
     }
 
     /**
+     * Sets the row number where the data in the file begins (first line = 1)
+     * @param row an int representing the row number
+     */
+    public void setDataBeginRowCount(int row){
+        if(row > 0) {
+            this.dataReader.setDataBeginRowCount(row);
+        }
+    }
+
+    /**
      * Sets if outliers should be removed before classifying
      * @param removeOutliers a boolean representing the desired action
      */
@@ -109,8 +121,10 @@ public class KnnClassifier {
      * Removes all outliers (more than two times standard deviation for numbers) from the datasets
      */
     private ArrayList<Dataset> removeOutliers(ArrayList<Dataset> datasets){
+        System.out.print("Removing outliers...");
         //TODO calculate standard deviation for every attribute which is an int or double
         //TODO remove datasets from ArrayList if attribute value is more than 2 times standard deviation
+        System.out.println("Done!");
         return datasets;
     }
 
@@ -119,6 +133,7 @@ public class KnnClassifier {
      * from this list to the corresponding category
      */
     private void categorizeList(ArrayList<Dataset> datasets){
+        System.out.print("Categorizing all datasets...");
         if(datasets.size() <= 0 || effectiveOutputColumnCount <= 0){
             return;
         }
@@ -126,12 +141,7 @@ public class KnnClassifier {
         for(Dataset dataset : datasets){
             int index = -1;
             for(OutputCategory cat : categories){
-                if(cat.getCategoryValue().getType() == AttributeTypes.TEXT){
-                    if(cat.getCategoryValue().getValue().equals(dataset.getAttribute(effectiveOutputColumnCount-1).getValue())){
-                        index = categories.indexOf(cat);
-                        break;
-                    }
-                }else if(cat.getCategoryValue().getValue() == dataset.getAttribute(effectiveOutputColumnCount-1).getValue()){
+                if(cat.getCategoryValue().getValue().equals(dataset.getAttribute(effectiveOutputColumnCount-1).getValue())){
                     index = categories.indexOf(cat);
                     break;
                 }
@@ -144,6 +154,7 @@ public class KnnClassifier {
 
             categories.get(index).addDataset(dataset);
         }
+        System.out.println("Done!");
     }
 
     /**
@@ -163,6 +174,7 @@ public class KnnClassifier {
 
         // Do k passes and change pack for testing each time
         for(int i = 0; i < k; i++){
+            System.out.print("Doing pass "+(i+1)+"...");
             // Create List for training datasets
             ArrayList<Dataset> train = new ArrayList<>();
             for(int j = 0; j < k; j++){
@@ -183,11 +195,7 @@ public class KnnClassifier {
                 for(int j = 0; j < k; j++){
                     Attribute attr = train.get(j).getAttribute(effectiveOutputColumnCount-1);
                     for(int n = 0; n < categories.size(); n++) {
-                        if (attr.getType() == AttributeTypes.TEXT){
-                            if(attr.getValue().equals(categories.get(n).getCategoryValue().getValue())) {
-                                numbers.set(n, numbers.get(n) + 1);
-                            }
-                        }else if(attr.getValue() == categories.get(n).getCategoryValue().getValue()){
+                        if(attr.getValue().equals(categories.get(n).getCategoryValue().getValue())) {
                             numbers.set(n, numbers.get(n) + 1);
                         }
                     }
@@ -202,11 +210,7 @@ public class KnnClassifier {
                 // Calculate actual and prediction index
                 for(int j = 0; j < categories.size(); j++){
                     if(actualIndex == 0){
-                        if(test.getAttribute(effectiveOutputColumnCount-1).getType() == AttributeTypes.TEXT){
-                            if(test.getAttribute(effectiveOutputColumnCount-1).getValue().equals(categories.get(j).getCategoryValue().getValue())){
-                                actualIndex = j;
-                            }
-                        }else if(test.getAttribute(effectiveOutputColumnCount-1).getValue() == categories.get(j).getCategoryValue().getValue()){
+                        if(test.getAttribute(effectiveOutputColumnCount-1).getValue().equals(categories.get(j).getCategoryValue().getValue())){
                             actualIndex = j;
                         }
                     }
@@ -219,9 +223,11 @@ public class KnnClassifier {
                 // Add entry to confusion matrix
                 confusionMatrix.increment(mostIndex, actualIndex);
             }
+            System.out.println("Done!");
         }
 
         // Print confusion matrix
+        System.out.println("Printing results...\n");
         confusionMatrix.printMatrix();
     }
 
@@ -230,6 +236,7 @@ public class KnnClassifier {
      * @return an ArrayList of ArrayLists of Datasets where each entry of the outer most ArrayList represents a pack
      */
     private ArrayList<ArrayList<Dataset>> createPacks(){
+        System.out.print("Creating packs...");
         ArrayList<ArrayList<Dataset>> packs = new ArrayList<>();
 
         for(int i = 0; i < k; i++){ // Loop through every pack (k packs)
@@ -244,16 +251,12 @@ public class KnnClassifier {
                     startIndex = cat.getDatasetNumber()/k*i;
                     endIndex = startIndex+cat.getDatasetNumber()/k;
                 }else if(cat.getDatasetNumber()%k <= i){
-                    startIndex = cat.getDatasetNumber()%k*(int)Math.ceil(cat.getDatasetNumber()/k)+
-                            (i-cat.getDatasetNumber()%k)*(int)Math.floor(cat.getDatasetNumber()/k);
-                    if(cat.getDatasetNumber()%k == i){
-                        endIndex = startIndex+(int)Math.floor(cat.getDatasetNumber()/k);
-                    }else{
-                        endIndex = startIndex+(int)Math.ceil(cat.getDatasetNumber()/k);
-                    }
+                    startIndex = cat.getDatasetNumber()%k*(int)Math.ceil((double)cat.getDatasetNumber()/k)+
+                            (i-cat.getDatasetNumber()%k)*(int)Math.floor((double)cat.getDatasetNumber()/k);
+                    endIndex = startIndex+(int)Math.floor((double)cat.getDatasetNumber()/k);
                 }else{
-                    startIndex = i*(int)Math.ceil(cat.getDatasetNumber()/k);
-                    endIndex = startIndex+(int)Math.ceil(cat.getDatasetNumber()/k);
+                    startIndex = i*(int)Math.ceil((double)cat.getDatasetNumber()/k);
+                    endIndex = startIndex+(int)Math.ceil((double)cat.getDatasetNumber()/k);
                 }
 
                 // Loop through datasets in current category which should be added in current pack
@@ -263,6 +266,7 @@ public class KnnClassifier {
             }
             packs.add(pack);
         }
+        System.out.println("Done!");
         return packs;
     }
 }
