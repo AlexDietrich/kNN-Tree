@@ -15,6 +15,7 @@ public class KnnClassifier {
     private int k = 10;
     private int effectiveOutputColumnCount = -1;
     private boolean removeOutliers = true;
+    private boolean randomizeOrder = true;
 
     /**
      * Creates a new kNN-Classifier instance
@@ -53,6 +54,9 @@ public class KnnClassifier {
 
             if(removeOutliers){
                 datasets = removeOutliers(datasets);
+            }
+            if(randomizeOrder){
+                Collections.shuffle(datasets);
             }
             categorizeList(datasets);
 
@@ -116,6 +120,14 @@ public class KnnClassifier {
      */
     public void setRemoveOutliers(boolean removeOutliers){
         this.removeOutliers = removeOutliers;
+    }
+
+    /**
+     * Sets if the order of the read data should be randomized before classifying
+     * @param randomizeOrder a boolean represented the desired action
+     */
+    public void setRandomizeOrder(boolean randomizeOrder) {
+        this.randomizeOrder = randomizeOrder;
     }
 
     /**
