@@ -21,7 +21,7 @@ public class Main {
         classifier.doKFoldCross();
 
         /* CLASSIFY TIMED */
-        classifier.measureClassifyingTime(10000);
+        classifier.measureClassifyingTime(100000);
 
         /**/
     }
