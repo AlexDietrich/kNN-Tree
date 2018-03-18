@@ -11,16 +11,16 @@ public class Main {
 
         /* WHITE WINE */
         classifier.setDelimiter(";");
-        //classifier.ignoreColumns(new int[]{1,2});
+        classifier.ignoreColumns(new int[]{1,2,3,4,5,6,7,9,10});
         classifier.setOutputColumnCount(12);
         classifier.setDataBeginRowCount(2);
         classifier.readData("datafiles/winequality-white-data.csv");
 
 
-        /* CLASSIFY NORMAL *
+        /* CLASSIFY NORMAL */
         classifier.doKFoldCross();
 
-        /* CLASSIFY TIMED */
+        /* CLASSIFY TIMED *
         classifier.measureClassifyingTime(100000);
 
         /**/
