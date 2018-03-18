@@ -14,7 +14,7 @@ public class KnnClassifier {
 
     private int k = 10;
     private int effectiveOutputColumnCount = -1;
-    private boolean removeOutliers = true;
+    private boolean removeOutliers = false;
     private boolean randomizeOrder = true;
 
     /**
