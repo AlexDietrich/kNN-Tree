@@ -15,15 +15,15 @@ public class Dataset {
      */
     public Dataset(String[] attributes, int outputColumnCount){
         int count = 1;
+        this.outputColumnCount = outputColumnCount;
         for(String s : attributes){
             if(s != null) {
                 addAttribute(s);
             }else if(outputColumnCount > count){
-                outputColumnCount--;
+                this.outputColumnCount--;
             }
             count++;
         }
-        this.outputColumnCount = outputColumnCount;
     }
 
     /**

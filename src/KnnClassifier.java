@@ -232,25 +232,25 @@ public class KnnClassifier {
         Collections.sort(train, cmp);
 
         // Check which category value is found the most in first k elements of sorted list
-        Hashtable<Attribute, Integer> numbers = new Hashtable<>();
-        for(int j = 0; j < k; j++){
-            Attribute a = train.get(j).getAttribute(effectiveOutputColumnCount-1);
-            if(numbers.containsKey(a)){
-                numbers.replace(a,numbers.get(a)+1);
-            }else {
-                numbers.put(a,1);
+        ArrayList<Integer> numbers = new ArrayList<>();
+        for(int i = 0; i < categories.size(); i++){
+            numbers.add(0);
+            for(int j = 0; j < k; j++){
+                Attribute a = train.get(j).getAttribute(effectiveOutputColumnCount-1);
+                if(a.getValue().equals(categories.get(i).getCategoryValue().getValue())){
+                    numbers.set(i,numbers.get(i)+1);
+                }
             }
         }
 
-        // Prediction index
         Attribute predicted = null;
         int mostValue = 0;
 
         // Calculate actual and prediction index
-        for(Attribute a : numbers.keySet()){
-            if(numbers.get(a) > mostValue){
-                mostValue = numbers.get(a);
-                predicted = a;
+        for(int i = 0; i < numbers.size(); i++){
+            if(numbers.get(i) > mostValue){
+                mostValue = numbers.get(i);
+                predicted = categories.get(i).getCategoryValue();
             }
         }
 
