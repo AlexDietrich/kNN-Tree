@@ -32,6 +32,10 @@ public class DatasetEuklidianComparator implements Comparator<Dataset> {
         double tmp1 = 0.0, tmp2 = 0.0;
 
         for(int i = 0; i < candidate.getAttributeCount(); i++){
+            if(candidate.getOutputColumnCount() == (i+1)){
+                continue;
+            }
+
             Attribute ac = candidate.getAttribute(i);
             Attribute a1 = object1.getAttribute(i);
             Attribute a2 = object2.getAttribute(i);

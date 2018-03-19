@@ -1,3 +1,5 @@
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.util.ArrayList;
 
 /**
@@ -5,17 +7,23 @@ import java.util.ArrayList;
  */
 public class Dataset {
     private ArrayList<Attribute> attributes = new ArrayList<>();
+    private int outputColumnCount = -1;
 
     /**
      * Creates a new instance of a Dataset
      * @param attributes a String-Array containing all attribute values for this Dataset
      */
-    public Dataset(String[] attributes){
+    public Dataset(String[] attributes, int outputColumnCount){
+        int count = 1;
         for(String s : attributes){
             if(s != null) {
                 addAttribute(s);
+            }else if(outputColumnCount > count){
+                outputColumnCount--;
             }
+            count++;
         }
+        this.outputColumnCount = outputColumnCount;
     }
 
     /**
@@ -35,15 +43,22 @@ public class Dataset {
             return;
         }catch(Exception e){}*/
 
-        // Check if attribute is double
-        try{
-            double d = Double.parseDouble(attr);
-            attributes.add(new Attribute(d, AttributeTypes.DECIMAL));
-            return;
-        }catch(Exception e){}
-
-        // Attribute is text
-        attributes.add(new Attribute(attr, AttributeTypes.TEXT));
+        // Check if attribute is number
+        NumberFormat formatter = NumberFormat.getInstance();
+        ParsePosition pos = new ParsePosition(0);
+        formatter.parse(attr, pos);
+        if(attr.length() != pos.getIndex()){
+            // Attribute is text
+            attributes.add(new Attribute(attr, AttributeTypes.TEXT));
+        }else {
+            // Attribute is number
+            try {
+                double d = Double.parseDouble(attr);
+                attributes.add(new Attribute(d, AttributeTypes.DECIMAL));
+                return;
+            } catch (Exception e) {
+            }
+        }
     }
 
     /**
@@ -61,5 +76,13 @@ public class Dataset {
      */
     public int getAttributeCount(){
         return attributes.size();
+    }
+
+    /**
+     * Returns the column number where the output is located
+     * @return an int containing the output column number
+     */
+    public int getOutputColumnCount(){
+        return outputColumnCount;
     }
 }

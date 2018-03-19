@@ -104,7 +104,7 @@ public class DataReader {
                     }
 
                     // Create new dataset from read attributes and add it to list
-                    Dataset d = new Dataset(splitted);
+                    Dataset d = new Dataset(splitted, outputColumnCount);
                     datasets.add(d);
                 }else{
                     skipped++;
