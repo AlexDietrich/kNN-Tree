@@ -4,24 +4,24 @@ public class Main {
         KnnClassifier classifier = new KnnClassifier();
         classifier.setK(10);
 
-        /* IRIS *
+        /* IRIS */
         classifier.setDelimiter(",");
         classifier.setOutputColumnCount(5);
         classifier.readData("datafiles/iris.data");
 
-        /* WHITE WINE */
+        /* WHITE WINE *
         classifier.setDelimiter(";");
-        classifier.ignoreColumns(new int[]{1,2,3,4,5,6,7,9,10});
+        classifier.ignoreColumns(new int[]{1,3,4,5,6,9,10});
         classifier.setOutputColumnCount(12);
         classifier.setDataBeginRowCount(2);
         classifier.readData("datafiles/winequality-white-data.csv");
 
 
-        /* CLASSIFY NORMAL */
+        /* CLASSIFY NORMAL *
         classifier.doKFoldCross();
 
-        /* CLASSIFY TIMED *
-        classifier.measureClassifyingTime(1);
+        /* CLASSIFY TIMED */
+        classifier.measureClassifyingTime(100000);
 
         /**/
     }
